@@ -23,7 +23,7 @@ object spark2 extends App {
 
   val top10ByArea: List[Country] = countries.sortWith(_.area > _.area).take(10)
 
-  // Как записывать записывать вложенные элементы без костылей с преобразованием кейс классов?
+  // Как записывать вложенные элементы без костылей с преобразованием кейс классов?
   case class DataForJson(/*offName: String,*/ capital: String, area: Int)
 
   def transform(list: List[Country]): List[DataForJson] =
