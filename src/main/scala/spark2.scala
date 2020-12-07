@@ -10,10 +10,7 @@ object spark2 extends App {
 
   def source = Source.fromURL("https://raw.githubusercontent.com/mledoze/countries/master/countries.json")
 
-  case class OffCom(official: Option[String], common: Option[String])
-  case class Native(nld: OffCom, pap: OffCom)
-  case class CountryName(common: Option[String], official: Option[String], native: Native)
-
+  case class CountryName(official: Option[String])
   case class Country(name: CountryName, capital: List[String], area: Int)
 
   val data: JValue = parse(source.mkString)
@@ -22,8 +19,8 @@ object spark2 extends App {
 
   val top10ByArea: List[Country] = countries.sortWith(_.area > _.area).take(10)
 
-  // Как записывать вложенные элементы без костылей с преобразованием кейс классов?
-  case class DataForJson(offName: String, capital: String, area: Int)
+  // Можно ли обойтись без преобразования кейс-классов ?
+  case class DataForJson(name: String, capital: String, area: Int)
 
   def transform(list: List[Country]): List[DataForJson] =
     list.map(x => DataForJson(x.name.official.getOrElse(""), x.capital.headOption.getOrElse(""), x.area))
