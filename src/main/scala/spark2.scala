@@ -10,12 +10,11 @@ object spark2 extends App {
 
   def source = Source.fromURL("https://raw.githubusercontent.com/mledoze/countries/master/countries.json")
 
-  case class OffCom(official: String, common: String)
+  case class OffCom(official: Option[String], common: Option[String])
   case class Native(nld: OffCom, pap: OffCom)
-  case class CountryName(common: String, official: String, native: Native)
+  case class CountryName(common: Option[String], official: Option[String], native: Native)
 
-  // Парсинг имени падает с ошибкой
-  case class Country(/*name: CountryName,*/ capital: List[String], area: Int)
+  case class Country(name: CountryName, capital: List[String], area: Int)
 
   val data: JValue = parse(source.mkString)
 
@@ -24,10 +23,10 @@ object spark2 extends App {
   val top10ByArea: List[Country] = countries.sortWith(_.area > _.area).take(10)
 
   // Как записывать вложенные элементы без костылей с преобразованием кейс классов?
-  case class DataForJson(/*offName: String,*/ capital: String, area: Int)
+  case class DataForJson(offName: String, capital: String, area: Int)
 
   def transform(list: List[Country]): List[DataForJson] =
-    list.map(x => DataForJson(/*x.name.official,*/ x.capital.headOption.getOrElse(""), x.area))
+    list.map(x => DataForJson(x.name.official.getOrElse(""), x.capital.headOption.getOrElse(""), x.area))
 
   val serJson: String = write(transform(top10ByArea))
 
