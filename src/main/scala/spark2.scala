@@ -35,7 +35,7 @@ object spark2 extends App {
 
   def transform2(list: List[Country]): List[JValue] = {
     def countryToJValue(country: Country): JValue =
-      ("name" -> country.name.official) ~
+      ("name" -> country.name.official.getOrElse("")) ~
       ("capital" -> country.capital.headOption) ~
       ("area" -> country.area)
 
