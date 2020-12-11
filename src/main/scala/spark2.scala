@@ -34,12 +34,12 @@ object spark2 extends App {
   import org.json4s.JsonDSL._
 
   def transform2(list: List[Country]): List[JValue] = {
-    def countryToJson(country: Country): JValue =
+    def countryToJValue(country: Country): JValue =
       ("name" -> country.name.official) ~
       ("capital" -> country.capital.headOption) ~
       ("area" -> country.area)
 
-    list.map(countryToJson)
+    list.map(countryToJValue)
   }
 
   val json: List[JValue] = transform2(top10ByArea)
