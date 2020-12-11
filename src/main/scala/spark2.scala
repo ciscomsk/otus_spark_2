@@ -1,3 +1,5 @@
+import com.fasterxml.jackson.annotation.JsonValue
+
 import java.io.PrintWriter
 import scala.io.Source
 import org.json4s._
@@ -19,13 +21,30 @@ object spark2 extends App {
 
   val top10ByArea: List[Country] = countries.sortWith(_.area > _.area).take(10)
 
-  // Можно ли обойтись без преобразования кейс-классов ?
+  // v1.1
   case class DataForJson(name: String, capital: String, area: Int)
 
-  def transform(list: List[Country]): List[DataForJson] =
+  def transform1(list: List[Country]): List[DataForJson] =
     list.map(x => DataForJson(x.name.official.getOrElse(""), x.capital.headOption.getOrElse(""), x.area))
 
-  val serJson: String = write(transform(top10ByArea))
+  val serJson1: String = write(transform1(top10ByArea))
+
+  // v1.2
+  // https://github.com/json4s/json4s
+  import org.json4s.JsonDSL._
+
+  def transform2(list: List[Country]): List[JValue] = {
+    def countryToJson(country: Country): JValue =
+      ("name" -> country.name.official) ~
+      ("capital" -> country.capital.headOption) ~
+      ("area" -> country.area)
+
+    list.map(countryToJson)
+  }
+
+  val json: List[JValue] = transform2(top10ByArea)
+  val json2: JValue = render(json)
+  val serJson2 = write(json2)
 
   def writeToFile(fileName: String, data: String): Unit = {
     val writer = new PrintWriter(fileName)
@@ -33,8 +52,10 @@ object spark2 extends App {
     writer.close()
   }
 
-  val outFile: String = args(0)
-
-  writeToFile(outFile, serJson)
+  if (args.length != 1) println("Name for output file is not set. Please set it as first argument.")
+  else {
+    val outFile: String = args(0)
+    writeToFile(outFile, serJson2)
+  }
 
 }
